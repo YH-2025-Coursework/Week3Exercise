@@ -23,16 +23,15 @@ jobs:
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
-
-  notify:
-    runs-on: ubuntu-latest
+  
+  notify-discord:
+    name: 📣 Notify Discord
     needs: build
-    if: always()
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Send status to Discord
-        uses: Ilshidur/action-discord@v2
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          args: >
-            Build job for PR #${{ github.event.pull_request.number }}
-            in repo `${{ github.repository }}` finished with status: ${{ needs.build.result }}
+    - name: 📤 Send message to Discord
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        curl -X POST "$DISCORD_WEBHOOK" \-H "Content-Type: application/json" \-d '{"content": "✅ Build passed for PR #${{ github.event.pull_request.number }} by ${{ github.actor }} in ${{ github.repository }}.\n🔗 ${{ github.event.pull_request.html_url }}"}'
