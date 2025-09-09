@@ -34,4 +34,8 @@ jobs:
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: |
-        curl -X POST "$DISCORD_WEBHOOK" \-H "Content-Type: application/json" \-d '{"content": "✅ Build passed for PR #${{ github.event.pull_request.number }} by ${{ github.actor }} in ${{ github.repository }}.\n🔗 ${{ github.event.pull_request.html_url }}"}'
+        STATUS="${{ needs.build.result }}"
+        MSG="✅ **Build ${STATUS}** by ${{ github.actor }}"
+        jq -n --arg u "Lana's Bot" --arg a 'https://avatars.githubusercontent.com/u/44036562' --arg c "$MSG" \
+          '{username:$u, avatar_url:$a, content:$c}' > body.json
+          curl -X POST "$DISCORD_WEBHOOK" -H "Content-Type: application/json" --data @body.json
